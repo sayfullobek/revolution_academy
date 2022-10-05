@@ -23,17 +23,24 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
+    private final
     AuthService authService;
-    @Autowired
+    private final
     AuthenticationManager authenticationManager;
-    @Autowired
+    private final
     UserRepository authRepository;
-    @Autowired
+    private final
     JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
+    private final
     DeleteComponent delete;
+
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager, UserRepository authRepository, JwtTokenProvider jwtTokenProvider, DeleteComponent delete) {
+        this.authService = authService;
+        this.authenticationManager = authenticationManager;
+        this.authRepository = authRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.delete = delete;
+    }
 
     @PostMapping("/register")
     public HttpEntity<?> register(@RequestBody ReqRegister reqRegister) {

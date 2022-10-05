@@ -1,6 +1,6 @@
 package it.revo.revoservice.controller;
 
-import it.revo.revoservice.entity.CategoryMessenger;
+import it.revo.revoservice.entity.allAdmins.CategoryMessenger;
 import it.revo.revoservice.payload.ApiResponse;
 import it.revo.revoservice.payload.CategoryMessengerDto;
 import it.revo.revoservice.repository.CategoryMessengerRepository;

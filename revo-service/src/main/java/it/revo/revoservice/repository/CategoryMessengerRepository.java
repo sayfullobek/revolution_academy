@@ -1,6 +1,6 @@
 package it.revo.revoservice.repository;
 
-import it.revo.revoservice.entity.CategoryMessenger;
+import it.revo.revoservice.entity.allAdmins.CategoryMessenger;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.web.bind.annotation.CrossOrigin;
 

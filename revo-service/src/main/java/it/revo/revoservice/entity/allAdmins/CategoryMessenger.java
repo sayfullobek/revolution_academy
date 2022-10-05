@@ -1,5 +1,6 @@
-package it.revo.revoservice.entity;
+package it.revo.revoservice.entity.allAdmins;
 
+import it.revo.revoservice.entity.User;
 import it.revo.revoservice.entity.template.AbsEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

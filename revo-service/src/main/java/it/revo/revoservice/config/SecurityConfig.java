@@ -80,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/auth/register", "/api/auth/login", "/api/role/**", "/api/auth/**", "/api/upload/**", "/api/message/**", "/api/category/messenger/**", "/api/icons/**")
+                .antMatchers("/api/auth/register", "/api/auth/login", "/api/role/**", "/api/auth/**", "/api/upload/**", "/api/message/**", "/api/category/messenger/**", "/api/icons/**", "/api/crm/course/**", "/api/crm/pupil/**", "/api/crm/group/**")
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/language")
                 .permitAll()

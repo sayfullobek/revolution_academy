@@ -1,6 +1,6 @@
 package it.revo.revoservice.repository.rest;
 
-import it.revo.revoservice.entity.Icons;
+import it.revo.revoservice.entity.allAdmins.Icons;
 import it.revo.revoservice.projection.CustomIcons;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
