@@ -1,14 +1,14 @@
 package it.revo.revoservice.service.crm;
 
-import it.revo.revoservice.entity.crm.Group;
-import it.revo.revoservice.entity.crm.Pupils;
+import it.revo.revoservice.entity.crm.*;
+import it.revo.revoservice.entity.enums.HaftaKunlari;
 import it.revo.revoservice.entity.enums.LidStatus;
+import it.revo.revoservice.entity.enums.WeekType;
 import it.revo.revoservice.payload.ApiResponse;
 import it.revo.revoservice.payload.crm.GroupDto;
 import it.revo.revoservice.payload.crm.PupilId;
-import it.revo.revoservice.repository.crm.CourseRepository;
-import it.revo.revoservice.repository.crm.GroupRepository;
-import it.revo.revoservice.repository.crm.PupilRepository;
+import it.revo.revoservice.repository.crm.*;
+import lombok.ToString;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +19,15 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final PupilRepository pupilRepository;
     private final CourseRepository courseRepository;
+    private final PupilFeeRepository pupilFeeRepository;
+    private final HaftaRepository haftaRepository;
 
-    public GroupService(GroupRepository groupRepository, PupilRepository pupilRepository, CourseRepository courseRepository) {
+    public GroupService(GroupRepository groupRepository, PupilRepository pupilRepository, CourseRepository courseRepository, PupilFeeRepository pupilFeeRepository, HaftaRepository haftaRepository) {
         this.groupRepository = groupRepository;
         this.pupilRepository = pupilRepository;
         this.courseRepository = courseRepository;
+        this.pupilFeeRepository = pupilFeeRepository;
+        this.haftaRepository = haftaRepository;
     }
 
     public ApiResponse addGroup(GroupDto groupDto) {
@@ -43,7 +47,37 @@ public class GroupService {
                 }
                 if (savePupils.size() > 0) {
                     group.setPupils(savePupils);
+                    group.setWeekType(groupDto.getWeekType());
+                    group.setDarsVaqti(groupDto.getDarsVaqti());
+                    //pupil fee start
+
+                    for (Pupils savePupil : savePupils) {
+                        List<Integer> haftaKuni = new ArrayList<>();
+                        if (groupDto.getWeekType().equals(WeekType.TOQ)) {
+                            haftaKuni = Arrays.asList(1, 3, 5);
+                        } else if (groupDto.getWeekType().equals(WeekType.JUFT)) {
+                            haftaKuni = Arrays.asList(2, 4, 6);
+                        } else if (groupDto.getWeekType().equals(WeekType.BOOTCAMP)) {
+                            haftaKuni = Arrays.asList(1, 2, 3, 4, 5, 6);
+                        }
+                        Date date1 = new Date();
+                        int i = date1.getMonth();
+                        Date date = new Date(new Date().getYear() + 1900, i, date1.getDate());
+                        savePupil.setNowMonth(date.getMonth());
+                        List<PupilFee> pupilFees = new ArrayList<>();
+                        UUID courseId = groupDto.getCourseId();
+                        Course course = courseRepository.findById(courseId).get();
+                        double coursePrice = course.getCoursePrice();
+                        double price = coursePrice / 12;
+                        nowMonthByDate(date, price, pupilFees, haftaKuni, groupDto);
+                        savePupil.setPupilFees(pupilFees);
+                        pupilRepository.save(savePupil);
+                    }
+
+
+                    //pupil fee end
                     groupRepository.save(group);
+
                     return new ApiResponse("successfully saved group", true);
                 } else {
                     return new ApiResponse("oka pupil qoshmaysizmi guruhga", false);
@@ -53,6 +87,33 @@ public class GroupService {
         } catch (Exception e) {
             e.printStackTrace();
             return new ApiResponse("xatolik", false);
+        }
+    }
+
+    public void nowMonthByDate(Date date, double coursePrice, List<PupilFee> pupilFees, List<Integer> haftaKuni, GroupDto groupDto) {
+        Map<Integer, String> kun = new HashMap<>();
+        kun.put(1, "Dushanba");
+        kun.put(2, "Seshanba");
+        kun.put(3, "Chorshanba");
+        kun.put(4, "Payshanba");
+        kun.put(5, "Juma");
+        kun.put(6, "Shanba");
+        kun.put(0, "Yakshanba");
+        for (int j = date.getDate(); j <= 31; j++) {
+            Date date2 = new Date(date.getYear(), date.getMonth(), j);
+            for (Integer integer : haftaKuni) {
+                if (date2.getMonth() == date.getMonth() && integer == date2.getDay()) {
+                    PupilFee pupilFee = new PupilFee();
+                    pupilFee.setHowMuchItPays(0);
+                    pupilFee.setHaftaKuni(kun.get(integer));
+                    pupilFee.setSana(Integer.valueOf(date2.toString().substring(8, 10)));
+                    pupilFee.setIsVisitation(null);
+                    pupilFee.setDarsVaqti(groupDto.getDarsVaqti());
+                    pupilFee.setHowMuchItPays(coursePrice);
+                    PupilFee save = pupilFeeRepository.save(pupilFee);
+                    pupilFees.add(save);
+                }
+            }
         }
     }
 
@@ -71,7 +132,7 @@ public class GroupService {
             Optional<Group> byId = groupRepository.findById(id);
             if (byId.isPresent()) {
                 Group group = byId.get();
-                if (group.equals(null)) {
+                if (group == null) {
                     groupRepository.delete(group);
                     return new ApiResponse("successfully deleted group", true);
                 } else {

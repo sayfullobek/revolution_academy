@@ -1,5 +1,7 @@
 package it.revo.revoservice.entity.crm;
 
+import it.revo.revoservice.entity.enums.DarsVaqti;
+import it.revo.revoservice.entity.enums.WeekType;
 import it.revo.revoservice.entity.template.AbsEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,4 +28,10 @@ public class Group extends AbsEntity {
             joinColumns = {@JoinColumn(name = "groups_id")},
             inverseJoinColumns = {@JoinColumn(name = "pupils_id")})
     private List<Pupils> pupils;
+
+    @Enumerated(EnumType.STRING)
+    private WeekType weekType;
+
+    @Enumerated(EnumType.STRING)
+    private DarsVaqti darsVaqti;
 }

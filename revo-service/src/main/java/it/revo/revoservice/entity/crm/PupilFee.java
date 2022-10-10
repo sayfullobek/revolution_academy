@@ -1,14 +1,16 @@
 package it.revo.revoservice.entity.crm;
 
+import it.revo.revoservice.entity.enums.DarsVaqti;
+import it.revo.revoservice.entity.enums.HaftaKunlari;
 import it.revo.revoservice.entity.template.AbsEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -16,10 +18,11 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 public class PupilFee extends AbsEntity {
-    @OneToOne(optional = false)
-    private Pupils pupils;
+    private double howMuchItPays;//o'quvchi qancha to'lov qiladi bir kunga
+    private String haftaKuni;
+    private Integer sana;
+    private Boolean isVisitation = false; //o'quvchi keldimi yoqmi ushbu kunga
 
-    private double howMuchItPays;//o'quvchi qancha to'lov qiladi
-    private Date nowMonth; //hozirgi oy
-    private boolean isDidHePay = false; //ushbu oq'uvchi oylik to'lovni to'laganmi
+    @Enumerated(EnumType.STRING)
+    private DarsVaqti darsVaqti;
 }

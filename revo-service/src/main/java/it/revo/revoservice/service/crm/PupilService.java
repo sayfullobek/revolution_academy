@@ -54,9 +54,6 @@ public class PupilService {
 
     public Pupils getOnePupil(UUID id) {
         Optional<Pupils> byId = pupilRepository.findById(id);
-        if (byId.isPresent()) {
-            return byId.get();
-        }
-        return null;
+        return byId.orElse(null);
     }
 }
