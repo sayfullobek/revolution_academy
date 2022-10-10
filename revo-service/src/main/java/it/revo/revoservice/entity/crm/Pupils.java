@@ -38,6 +38,15 @@ public class Pupils extends AbsEntity {
             inverseJoinColumns = {@JoinColumn(name = "course_id")})
     private List<Course> courses;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "pupil_pupilFee",
+            joinColumns = {@JoinColumn(name = "pupil_id")},
+            inverseJoinColumns = {@JoinColumn(name = "pupilFee_id")})
+    private List<PupilFee> PupilFees;
+
+    private int nowMonth; //hozirgi oy
+    private boolean isDidHePay = false; //ushbu oq'uvchi oylik to'lovni to'laganmi
+
     private boolean isActive = true;//o'quvchi activmi
 
     private boolean isClientSee = false;//o'quvchi client panelga ko'rsatilsinmi

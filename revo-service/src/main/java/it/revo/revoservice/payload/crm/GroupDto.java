@@ -2,6 +2,8 @@ package it.revo.revoservice.payload.crm;
 
 import it.revo.revoservice.entity.crm.Course;
 import it.revo.revoservice.entity.crm.Pupils;
+import it.revo.revoservice.entity.enums.DarsVaqti;
+import it.revo.revoservice.entity.enums.WeekType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +28,13 @@ public class GroupDto {
 
     private List<UUID> pupilsId; //ushbu guruhning oq'uvchilari
 
-    public GroupDto(String groupName, UUID courseId) {
+    private WeekType weekType;
+    private DarsVaqti darsVaqti;
+
+    public GroupDto(String groupName, UUID courseId, WeekType weekType, DarsVaqti darsVaqti) {
         this.groupName = groupName;
         this.courseId = courseId;
+        this.weekType = weekType;
+        this.darsVaqti = darsVaqti;
     }
 }
