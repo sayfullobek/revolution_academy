@@ -36,16 +36,16 @@ public class Main {
 //        haftaKunlaris.add(HaftaKunlari.MONDAY);
 //        haftaKunlaris.add(HaftaKunlari.WEDNESDAY);
 //        haftaKunlaris.add(HaftaKunlari.FRIDAY);
-        int count = 1;
-        for (int j = date.getDate(); j <= 31; j++) {
-            Date date2 = new Date(date.getYear(), date.getMonth(), j);
-            if (date2.getMonth() == date.getMonth() && date2.getDay() == 1 || date2.getDay() == 3 || date2.getDay() == 5) {
-                System.out.println(count + ", " + date2);
-                count++;
-            }
+//        int count = 1;
+//        for (int j = date.getDate(); j <= 31; j++) {
+//            Date date2 = new Date(date.getYear(), date.getMonth(), j);
+//            if (date2.getMonth() == date.getMonth() && date2.getDay() == 1 || date2.getDay() == 3 || date2.getDay() == 5) {
+//                System.out.println(count + ", " + date2);
+//                count++;
+//            }
 //            else {
 //                System.err.println(j + ", " + date2);
 //            }
-        }
+//        }
     }
 }

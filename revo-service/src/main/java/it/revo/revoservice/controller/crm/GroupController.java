@@ -3,6 +3,7 @@ package it.revo.revoservice.controller.crm;
 import it.revo.revoservice.entity.crm.Group;
 import it.revo.revoservice.payload.ApiResponse;
 import it.revo.revoservice.payload.crm.GroupDto;
+import it.revo.revoservice.payload.crm.PupilDto;
 import it.revo.revoservice.payload.crm.PupilId;
 import it.revo.revoservice.repository.crm.GroupRepository;
 import it.revo.revoservice.service.crm.GroupService;
@@ -51,6 +52,18 @@ public class GroupController {
     @PutMapping("/pupil/{id}")
     public HttpEntity<?> activeChange(@PathVariable UUID id, @RequestBody PupilId pupilId) {
         ApiResponse apiResponse = groupService.activePupilChange(id, pupilId);
+        return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
+    }
+
+    @PutMapping("/pupil/payment/{id}")
+    public HttpEntity<?> pupilPayment(@PathVariable UUID id, @RequestBody PupilDto pupilDto) {
+        ApiResponse payment = groupService.payment(id, pupilDto);
+        return ResponseEntity.status(payment.isSuccess() ? 200 : 409).body(payment);
+    }
+
+    @PutMapping("/pupil/report/{id}")
+    public HttpEntity<?> pupilReportSave(@PathVariable UUID id, @RequestBody PupilDto pupilDto) {
+        ApiResponse apiResponse = groupService.reportPupil(id, pupilDto);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
 }

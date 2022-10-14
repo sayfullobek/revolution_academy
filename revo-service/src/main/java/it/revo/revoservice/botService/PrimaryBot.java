@@ -1,17 +1,18 @@
 package it.revo.revoservice.botService;
 
 import it.revo.revoservice.entity.crm.Course;
+import it.revo.revoservice.entity.enums.TgUserStatus;
+import it.revo.revoservice.entity.tgBot.UserBot;
+import it.revo.revoservice.payload.bot.BotUserDto;
+import it.revo.revoservice.repository.bot.BotUserRepository;
 import it.revo.revoservice.repository.crm.CourseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import it.revo.revoservice.service.bot.UserBotService;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.objects.Contact;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -24,8 +25,9 @@ import java.util.*;
 
 @Service
 public class PrimaryBot extends TelegramLongPollingBot {
-    @Autowired
-    CourseRepository courseRepository;
+    private final UserBotService botService;
+    private final BotUserRepository botUserRepository;
+    private final CourseRepository courseRepository;
 
     Long id;
 //    String kurs = getLanguage().get(id).equals("uz") ? "Kurslar" : getLanguage().get(id).equals("en") ? "Course" : "курсы";
@@ -37,6 +39,12 @@ public class PrimaryBot extends TelegramLongPollingBot {
     Map<Long, String> language = new HashMap<>();
     Set<Long> statistika = new HashSet<>();
     Set<Long> registerId = new HashSet<>();
+
+    public PrimaryBot(UserBotService botService, BotUserRepository botUserRepository, CourseRepository courseRepository) {
+        this.botService = botService;
+        this.botUserRepository = botUserRepository;
+        this.courseRepository = courseRepository;
+    }
 
     public Map<Long, String> getLanguage() {
         return language;
@@ -77,6 +85,9 @@ public class PrimaryBot extends TelegramLongPollingBot {
                     getFirstLan(sendMessage, keyboardMarkup1, "Assalomu alekum " + name + " botimizga hush kelipsiz tilni tanlang!");
                     //D:\rasm.jpg
                     statistika.add(chatId);
+                    User from = message.getFrom();
+                    Contact contact = message.getContact();
+                    startUser(chatId, from.getUserName(), from.getFirstName(), from.getLastName());
                 } else if (text.equals(getLanguage().get(chatId).equals("uz") ? "Kurslar" : getLanguage().get(chatId).equals("en") ? "Course" : "курсы")) {
                     getRegisterMenu(sendMessage);
                     sendMSG(sendMessage, "Kursni tanlang!");
@@ -88,7 +99,7 @@ public class PrimaryBot extends TelegramLongPollingBot {
                     sendMSG(sendMessage, "statestika: bizning botimizda " + statistika.size() + " ta foydalanuvchi mavjud");
                 } else if (text.equals(getLanguage().get(chatId).equals("uz") ? "Biz bilan aloqa" : getLanguage().get(chatId).equals("en") ? "we contact with" : "Biz bilan aloqa")) {
                     sendMSG(sendMessage, "phoneNumber: " + BotConfig.PHONE_NUMBER + "\ntelegrem link: " +
-                            BotConfig.TELEGRAM_LINK + "\nTelegram kanal: https://t.me/yangishahrisabz_group \n Instagram: https://www.instagram.com/sayfullobek/");
+                            BotConfig.TELEGRAM_LINK + "\nTelegram kanal: https://t.me/yangishahrisabz_group \n Instagram: https://www.instagram.com/sayfullobek__/");
                 } else if (isRegister.get(chatId).equals("firstName")) {
                     if (text.length() >= 3) {
                         isRegister.put(chatId, "lastName");
@@ -116,6 +127,7 @@ public class PrimaryBot extends TelegramLongPollingBot {
                             phoneNumber.put(chatId, text);
 //                            sendMSG(sendMessage, "ro'yxatdan o'tdingiz oka");
                             buttons(sendMessage, getLanguage().get(id).equals("uz") ? "Siz muaffaqiyatle ruyxatdan utdingiz!" : getLanguage().get(id).equals("en") ? "you successfully registered" : "royxatbek");
+                            registerUser(chatId);
                         } catch (Exception e) {
                             sendMSG(sendMessage, getLanguage().get(id).equals("uz") ? "Faqat raqamlardan iborat bo'lsin!" : getLanguage().get(id).equals("en") ? "number" : "tel xota");
                         }
@@ -137,6 +149,7 @@ public class PrimaryBot extends TelegramLongPollingBot {
                 registerId.add(chatId);
                 isRegister.remove(chatId);
                 buttons(sendMessage, getLanguage().get(id).equals("uz") ? "Siz muaffaqiyatle ruyxatdan utdingiz!" : getLanguage().get(id).equals("en") ? "you successfully registered" : "royxatbek");
+                registerUser(chatId);
             }
         } else if (update.hasCallbackQuery()) {
             String data = update.getCallbackQuery().getData();
@@ -178,6 +191,22 @@ public class PrimaryBot extends TelegramLongPollingBot {
                 getButtonLan("ru", id, sendPhoto);
             }
         }
+    }
+
+    public void registerUser(Long chatId) {
+        BotUserDto botUserDto = new BotUserDto(
+                chatId,
+                firstName.get(chatId),
+                lastName.get(chatId),
+                phoneNumber.get(chatId)
+        );
+    }
+
+    public void startUser(Long chatId, String username, String firstName, String lastName) {
+        UserBot botUser = new UserBot(
+                TgUserStatus.START, chatId, username, firstName, lastName
+        );
+        botService.startUsersSave(botUser);
     }
 
     //userninh o'ziga ko'rinadigan ma'lumotlari
