@@ -1,17 +1,20 @@
 package it.revo.revoservice.service.crm;
 
-import it.revo.revoservice.entity.crm.*;
-import it.revo.revoservice.entity.enums.HaftaKunlari;
+import it.revo.revoservice.entity.crm.Course;
+import it.revo.revoservice.entity.crm.Group;
+import it.revo.revoservice.entity.crm.PupilFee;
+import it.revo.revoservice.entity.crm.Pupils;
 import it.revo.revoservice.entity.enums.LidStatus;
 import it.revo.revoservice.entity.enums.WeekType;
 import it.revo.revoservice.payload.ApiResponse;
 import it.revo.revoservice.payload.crm.GroupDto;
+import it.revo.revoservice.payload.crm.PupilDto;
 import it.revo.revoservice.payload.crm.PupilId;
 import it.revo.revoservice.repository.crm.*;
-import lombok.ToString;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 
 @Service
@@ -62,15 +65,16 @@ public class GroupService {
                         }
                         Date date1 = new Date();
                         int i = date1.getMonth();
-                        Date date = new Date(new Date().getYear() + 1900, i, date1.getDate());
-                        savePupil.setNowMonth(date.getMonth());
+//                        Date date = new Date(new Date().getYear() + 1900, i, date1.getDate());
+                        savePupil.setNowMonth(date1.getMonth());
                         List<PupilFee> pupilFees = new ArrayList<>();
                         UUID courseId = groupDto.getCourseId();
                         Course course = courseRepository.findById(courseId).get();
                         double coursePrice = course.getCoursePrice();
-                        double price = coursePrice / 12;
-                        nowMonthByDate(date, price, pupilFees, haftaKuni, groupDto);
+                        double price = coursePrice / 13;
+                        nowMonthByDate(date1, price, pupilFees, haftaKuni, groupDto);
                         savePupil.setPupilFees(pupilFees);
+                        savePupil.setBalance(-coursePrice);
                         pupilRepository.save(savePupil);
                     }
 
@@ -106,7 +110,7 @@ public class GroupService {
                     PupilFee pupilFee = new PupilFee();
                     pupilFee.setHowMuchItPays(0);
                     pupilFee.setHaftaKuni(kun.get(integer));
-                    pupilFee.setSana(Integer.valueOf(date2.toString().substring(8, 10)));
+                    pupilFee.setSana(Integer.parseInt(date2.toString().substring(8, 10)));
                     pupilFee.setIsVisitation(null);
                     pupilFee.setDarsVaqti(groupDto.getDarsVaqti());
                     pupilFee.setHowMuchItPays(coursePrice);
@@ -161,5 +165,53 @@ public class GroupService {
             return new ApiResponse("successfully is actuve change", true);
         }
         return new ApiResponse("this is group not found", false);
+    }
+
+
+    public ApiResponse payment(UUID id, PupilDto pupilDto) {
+        try {
+            Optional<Group> byId = groupRepository.findById(id);
+            if (byId.isPresent()) {
+                Group group = byId.get();
+                for (Pupils pupil : group.getPupils()) {
+                    if (pupil.getId().equals(pupilDto.getId())) {
+                        pupil.setBalance(pupil.getBalance() + pupilDto.getBalance());
+                        pupilRepository.save(pupil);
+                    }
+                }
+                groupRepository.save(group);
+                return new ApiResponse("successfully paymen is pupil", true);
+            }
+            return new ApiResponse("this is pupil not found", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ApiResponse(e.toString(), false);
+        }
+    }
+
+    public ApiResponse reportPupil(UUID id, PupilDto pupilDto) {
+        try {
+            Optional<Group> byId = groupRepository.findById(id);
+            Date date = new Date();
+            if (byId.isPresent()) {
+                Group group = byId.get();
+                for (Pupils pupil : group.getPupils()) {
+                    if (pupil.getId().equals(pupilDto.getId())) {
+                        for (PupilFee pupilFee : pupil.getPupilFees()) {
+                            if (pupilFee.getSana().equals(date.getDate())) {
+                                pupilFee.setIsVisitation(pupilDto.getIsVisitation());
+                            }
+                        }
+                        pupilRepository.save(pupil);
+                    }
+                    groupRepository.save(group);
+                    return new ApiResponse("successfully saved report", true);
+                }
+            }
+            return new ApiResponse("this is group not found", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ApiResponse(e.toString(), false);
+        }
     }
 }

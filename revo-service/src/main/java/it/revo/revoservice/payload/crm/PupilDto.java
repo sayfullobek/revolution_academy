@@ -36,6 +36,10 @@ public class PupilDto {
 
     private LidStatus lidStatus;
 
+    private double balance;
+
+    private Boolean isVisitation;
+
     public PupilDto(String name, String surname, String phoneNumber, FromWhereStatus fromWhereStatus, Date birthDate, List<UUID> coursesId, LidStatus lidStatus) {
         this.name = name;
         this.surname = surname;
